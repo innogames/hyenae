@@ -96,7 +96,7 @@ int
     ip_v6_h = (ip_v6_h_t*) ip_pkt;
     ip_v6_h->ip6_ctlun.ip6_un2_vfc = IP6_VERSION;
     ip_v6_h->ip6_ctlun.ip6_un1.ip6_un1_plen =
-      ip_pkt_len - sizeof(ip_v6_h_t);
+      htons(ip_pkt_len - sizeof(ip_v6_h_t));
     ip_v6_h->ip6_ctlun.ip6_un1.ip6_un1_nxt = ip_proto;
     ip_v6_h->ip6_ctlun.ip6_un1.ip6_un1_hlim = ip_ttl;
     ip6_pton(src_pattern->ip_addr, &ip_v6_h->ip6_src);
@@ -123,15 +123,27 @@ int
     ip6_checksum(ip_v6_h, ip_pkt_len);
   }
   /* Wrap Ethernet-Layer */
-  return hy_build_eth_packet(
-           src_pattern,
-           dst_pattern,
-           ip_v_assumption,
-           packet,
-           packet_len,
-           ip_pkt,
-           ip_pkt_len,
-           ETH_TYPE_IP);
+  if (src_pattern->ip_v == HY_AD_T_IP_V4) {
+    return hy_build_eth_packet(
+      src_pattern,
+      dst_pattern,
+      ip_v_assumption,
+      packet,
+      packet_len,
+      ip_pkt,
+      ip_pkt_len,
+      ETH_TYPE_IP);
+  } else {
+    return hy_build_eth_packet(
+      src_pattern,
+      dst_pattern,
+      ip_v_assumption,
+      packet,
+      packet_len,
+      ip_pkt,
+      ip_pkt_len,
+      ETH_TYPE_IPV6);
+  }
 } /* hy_build_ip_packet */
 
 /* -------------------------------------------------------------------------- */
